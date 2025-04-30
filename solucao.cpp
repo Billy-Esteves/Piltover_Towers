@@ -1,5 +1,55 @@
 #include <iostream>
+#include <unordered_set>
 
+/*===========[ FUNCTION/GLOBAL VARS DECLARATION ]==========*/
+
+std::vector<std::vector<int>> createGraph(int **edges, int E, int N);
+void depthFirstSearch(int node, std::vector<std::vector<int>>& graph, std::vector<bool>& visited);
+bool mandatoryConnected(int* mandatoryTowers, int M, std::vector<std::vector<int>>& graph);
+
+/*===========[ FUNCTIONS ]==========*/
+
+// Created the undirected graph from the edges. 
+std::vector<std::vector<int>> createGraph(int **edges, int E, int N) {
+
+    // List of lists of integers: each towers stores a list of its neighbors
+    std::vector<std::vector<int>> newGrapgh(N);
+
+    for(int i = 0; i < E; i++) {
+        int u = edges[i][0];
+        int v = edges[i][1];
+        int cost = edges[i][2];
+        newGrapgh[u][v] = cost;
+        newGrapgh[v][u] = cost; // Assuming undirected graph
+    }
+    return newGrapgh;
+}
+
+// Perform a depth search and mark all reachable nodes from 'node' with true
+void depthFirstSearch(int node, std::vector<std::vector<int>>& graph, std::vector<bool>& visited) {
+    visited[node] = true;
+    for (int neighbor : graph[node]) {
+        if (!visited[neighbor]) {
+            depthFirstSearch(neighbor, graph, visited);
+        }
+    }
+}
+
+// Check if all MANDATORY towers are connected.
+bool mandatoryConnected(int* mandatoryTowers, int M, std::vector<std::vector<int>>& graph) {
+    std::vector<bool> visited(graph.size(), false);
+
+    // Start with ONE mandatory tower. If all mandatory towers were reachable, then all is good
+    depthFirstSearch(mandatoryTowers[0], graph, visited);
+
+    for (int i = 0; i < M; ++i) {
+        if (!visited[mandatoryTowers[i]])
+            return false;
+    }
+    return true;
+}
+
+/*===========[ MAIN ]==========*/
 
 int main() {
     /*
@@ -44,14 +94,38 @@ int main() {
             std::cin >> mandatory[i];
         }
 
+        /*===========[ PRE PROCESSING ]==========*/
+
+        /*
+        Pre-processing:
+           1. Check if the graph separates mandatory towers. If so, solution is impossible.
+        */
+        std::vector<std::vector<int>> graph = createGraph(edges, E, N);
+        
+        // If all mandatory towers are not connected, print apropriate message and carry on
+        if(!mandatoryConnected(mandatory, M, graph)) {
+            std::cout << "Impossible to connect!\n";
+
+            //Free memory and continue 
+            for(int i = 0; i < E; i++) {
+                delete[] edges[i];
+            }
+            delete[] edges;
+            delete[] mandatory;
+            continue;
+        }
+        /*===========[ SOLUTION ]==========*/
+        
+        /* 
         // Kruskal's algorithm to find the maximum edge value in the MST
         // of the mandatory towers
         // ...
 
         // Print the result
         // ...
+        */
 
-        // Free memory
+        //Free memory 
         for(int i = 0; i < E; i++) {
             delete[] edges[i];
         }
