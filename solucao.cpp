@@ -1,42 +1,44 @@
 #include <iostream>
+#include <vector>
 #include <unordered_set>
 
 /*===========[ FUNCTION/GLOBAL VARS DECLARATION ]==========*/
 
-std::vector<std::vector<int>> createGraph(int **edges, int E, int N);
+std::vector<std::vector<std::pair<int, int>>> createGraph(int **edges, int E, int N);
 void depthFirstSearch(int node, std::vector<std::vector<int>>& graph, std::vector<bool>& visited);
 bool mandatoryConnected(int* mandatoryTowers, int M, std::vector<std::vector<int>>& graph);
 
 /*===========[ FUNCTIONS ]==========*/
 
 // Created the undirected graph from the edges. 
-std::vector<std::vector<int>> createGraph(int **edges, int E, int N) {
+std::vector<std::vector<std::pair<int, int>>> createGraph(int **edges, int E, int N) {
 
     // List of lists of integers: each towers stores a list of its neighbors
-    std::vector<std::vector<int>> newGrapgh(N);
+    std::vector<std::vector<std::pair<int, int>>> newGraph(N);  // (neighbor, cost)
 
-    for(int i = 0; i < E; i++) {
+    for (int i = 0; i < E; ++i) {
         int u = edges[i][0];
         int v = edges[i][1];
         int cost = edges[i][2];
-        newGrapgh[u][v] = cost;
-        newGrapgh[v][u] = cost; // Assuming undirected graph
+
+        newGraph[u].push_back({v, cost});
+        newGraph[v].push_back({u, cost});  // since it's undirected
     }
-    return newGrapgh;
+    return newGraph;
 }
 
 // Perform a depth search and mark all reachable nodes from 'node' with true
-void depthFirstSearch(int node, std::vector<std::vector<int>>& graph, std::vector<bool>& visited) {
+void depthFirstSearch(int node, std::vector<std::vector<std::pair<int, int>>>& graph, std::vector<bool>& visited) {
     visited[node] = true;
-    for (int neighbor : graph[node]) {
-        if (!visited[neighbor]) {
-            depthFirstSearch(neighbor, graph, visited);
+    for (std::pair<int, int> neighbor : graph[node]) {
+        if (!visited[neighbor.first]) {
+            depthFirstSearch(neighbor.first, graph, visited);
         }
     }
 }
 
 // Check if all MANDATORY towers are connected.
-bool mandatoryConnected(int* mandatoryTowers, int M, std::vector<std::vector<int>>& graph) {
+bool mandatoryConnected(int* mandatoryTowers, int M, std::vector<std::vector<std::pair<int, int>>>& graph) {
     std::vector<bool> visited(graph.size(), false);
 
     // Start with ONE mandatory tower. If all mandatory towers were reachable, then all is good
@@ -100,7 +102,7 @@ int main() {
         Pre-processing:
            1. Check if the graph separates mandatory towers. If so, solution is impossible.
         */
-        std::vector<std::vector<int>> graph = createGraph(edges, E, N);
+       std::vector<std::vector<std::pair<int, int>>> graph = createGraph(edges, E, N);
         
         // If all mandatory towers are not connected, print apropriate message and carry on
         if(!mandatoryConnected(mandatory, M, graph)) {
