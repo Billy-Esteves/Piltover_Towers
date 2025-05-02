@@ -30,7 +30,7 @@ std::vector<std::vector<std::pair<int, int>>> createGraph(int **edges, int E, in
     }
 
       // Sort by cost (helps with main solution)
-    for (std::vector<std::pair<int, int>> element : newGraph) {
+    for (std::vector<std::pair<int, int>>& element : newGraph) {
         std::sort(element.begin(), element.end(), [](const std::pair<int, int>& a, const std::pair<int, int>& b) {
             return a.second < b.second;
         });
@@ -90,7 +90,7 @@ int solutionAlgorythm(std::vector<std::vector<std::pair<int, int>>> graph, int c
         visited[currentTower] = true;
 
         // 1 - Mark in the mandatory list, if its a mandatory tower
-        for(std::pair<int, bool> tower : mandatory) {
+        for(std::pair<int, bool>& tower : mandatory) {
             if (tower.first == currentTower) {
                 tower.second = true;
                 break;
