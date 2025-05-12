@@ -40,7 +40,7 @@ bool comparator(const Edge& x, const Edge& y) {
     return x.cost < y.cost;
 }
 
-bool canFormEdges(const vector<Edge>& edges, int maxCost, const vector<int>& mandatory, int x) {
+int canFormEdges(const vector<Edge>& edges, int maxCost, const vector<int>& mandatory, int x) {
     // assign a parent to x
     unionFind u(x);
 
@@ -54,10 +54,10 @@ bool canFormEdges(const vector<Edge>& edges, int maxCost, const vector<int>& man
     // check if the connection is possible
     for (size_t i = 1; i < mandatory.size(); i++) {
         if (u.find(mandatory[i]) != representative)
-            return false;
+            return 0;
     }
 
-    return true;
+    return 1;
 }
 
 int solution(int N, const vector<Edge>& edges, const vector<int>& mandatory) {
@@ -65,7 +65,7 @@ int solution(int N, const vector<Edge>& edges, const vector<int>& mandatory) {
     sort(sortedEdges.begin(), sortedEdges.end(), comparator);
 
     vector<int> cost;
-    for (const Edge& x : sortedEdges) {
+    for ( Edge& x : sortedEdges) {
         // list is ordered so we only need to check the last element
         if (cost.empty() || cost.back() != x.cost) {
             cost.push_back(x.cost);
@@ -79,7 +79,7 @@ int solution(int N, const vector<Edge>& edges, const vector<int>& mandatory) {
         auto mid = low + (high - low) / 2;
         int maxCost = *mid;
 
-        if (canFormEdges(sortedEdges, maxCost, mandatory, N)) {
+        if (canFormEdges(sortedEdges, maxCost, mandatory, N) == 1) {
             result = maxCost;
             high = mid - 1;
         } else {
@@ -90,8 +90,30 @@ int solution(int N, const vector<Edge>& edges, const vector<int>& mandatory) {
     return result;
 }
 
+int preprocessing (const vector<Edge>& edges, const vector<int>& mandatory, int x) {
+    // assign a parent to x
+    unionFind u(x);
+
+    // if the cost of the edge is bigger than the max it isn't part of the solution
+    for (const Edge& e : edges) {
+        u.unite(e.origin, e.destination);
+    }
+
+    int representative = u.find(mandatory[0]);
+    // check if the connection is possible
+    for (size_t i = 1; i < mandatory.size(); i++) {
+        if (u.find(mandatory[i]) != representative)
+            return 0;
+    }
+
+    return 1;
+}
+
 /*===========[ MAIN ]==========*/
 int main() {
+    ios_base::sync_with_stdio(0);
+    cin.tie(0);
+
     int N, E;
 
     while (cin >> N >> E) {
@@ -108,6 +130,11 @@ int main() {
         vector<int> mandatory(M);
         for (int i = 0; i < M; i++) {
             cin >> mandatory[i];
+        }
+
+        if (preprocessing(edges, mandatory, N) == 0) {
+            cout << "Impossible to connect!" << endl;
+            continue;
         }
 
         int result = solution(N, edges, mandatory);
